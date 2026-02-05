@@ -1,0 +1,21 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      
+      SA_PASSWORD: "Smeypassword123!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "1433:1433"
+    networks:
+      - backend
+volumes:
+  sqlserverdata:
+networks:
+  backend:
+    driver: bridge
