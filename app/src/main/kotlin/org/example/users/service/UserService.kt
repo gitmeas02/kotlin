@@ -30,7 +30,7 @@ class UserService(private val repository: UserRepository){
         }
     }
     fun emailExists(email: String): Boolean {
-        return repository.existsByEmail(email)
+        return repository.findByEmail(email) != null
     }
     fun IdExists(id: Long): Boolean{
         return repository.existsById(id)

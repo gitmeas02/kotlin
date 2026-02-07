@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-open class App {
+open class App { // 
     val greeting: String = "Hello World!"
 }
 

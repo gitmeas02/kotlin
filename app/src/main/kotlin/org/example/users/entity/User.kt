@@ -12,17 +12,22 @@ open class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open var id: Long = 0,
     
-    @Column(nullable = false, length =100)
+    @Column(nullable = false, length = 100)
     open var name: String = "",
 
     @Column(nullable = false, unique = true)
     open var email: String = "",
 
+    @Column(nullable = false)
+    open var password: String = "",
+
+    @Column(name = "created_at", nullable = false)
     open var createdAt: Instant = Instant.now(),
-    var updatedAt: Instant = Instant.now()
-)
-{
-    // Example of custom getter/setter (optional)open
+    
+    @Column(name = "updated_at", nullable = false)
+    open var updatedAt: Instant = Instant.now()
+) {
+    // Example of custom getter/setter (optional)
     var safeName: String
         get() = name.uppercase()
         set(value) {

@@ -3,10 +3,10 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: sqlserver
     environment:
-      
       SA_PASSWORD: "Smeypassword123!"
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Express"
+    command: /opt/mssql/bin/sqlservr
     volumes:
       - sqlserverdata:/var/opt/mssql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -14,8 +14,22 @@ services:
       - "1433:1433"
     networks:
       - backend
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.2
+    container_name: keycloak
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    command: start-dev
+    ports:
+      - "8088:8080"
+    networks:
+      - backend
 volumes:
   sqlserverdata:
 networks:
   backend:
     driver: bridge
+# khunmeasAdmin this is the password keycloak
+# gitmeas02 : gitmeas02password 
