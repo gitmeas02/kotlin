@@ -2,6 +2,8 @@ package org.example.users.controller
 
 import org.example.users.ApiResponse
 import org.example.users.dto.UserCreateRequest
+import org.example.users.dto.UserResponseDTO
+import org.example.users.dto.toResponseDTO
 import org.example.users.entity.User
 import org.example.users.service.UserService
 import org.springframework.data.domain.Page
@@ -20,31 +22,33 @@ class UserController(private val userService: UserService) {
     @PostMapping("/create",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
         produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun create(@RequestBody request: UserCreateRequest): ResponseEntity<ApiResponse<User>> {
+    fun create(@RequestBody request: UserCreateRequest): ResponseEntity<ApiResponse<UserResponseDTO?>> {
         val name = request.name
         val email = request.email
         if(name.isBlank() || email.isBlank()){
             return ResponseEntity.badRequest().body(
-                ApiResponse(false,"Name and Email cannot be blank")
+                ApiResponse(false,"Name and Email cannot be blank", null)
             );
         }
         if(!email.contains("@")){
             return ResponseEntity.badRequest().body(
-                ApiResponse(false, "Invalide email format")
+                ApiResponse(false, "Invalide email format", null)
             );
         }
         if(userService.emailExists(email)){
             return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ApiResponse(false,"Choose another emails")
+                ApiResponse(false,"Choose another emails", null)
             )
         }
         return try{
             val createdUser = userService.createUser(name,email);
             ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse(true, "User created successfully", createdUser)
+                ApiResponse(true, "User created successfully", createdUser.toResponseDTO())
             )
         }catch (e:Exception){
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse(false,"An Error occured: ${e.message}"));
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ApiResponse(false,"An Error occured: ${e.message}", null)
+            );
         }
     }
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -53,10 +57,9 @@ class UserController(private val userService: UserService) {
         @RequestParam(defaultValue = "10") size:Int
     ): ResponseEntity<Any> {
         return try {
-            val users = userService.getAllUsers(
-                page,size
-            )
-            ResponseEntity.ok(users)
+            val usersPage = userService.getAllUsers(page, size)
+            val usersResponse = usersPage.map { it.toResponseDTO() }
+            ResponseEntity.ok(usersResponse)
         } catch (e: Exception) {
             // Log the exception for debugging
             println("Error getting all users: ${e.message}")
@@ -68,7 +71,7 @@ class UserController(private val userService: UserService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteUser(@PathVariable id: Long): ResponseEntity<Map<String,String>>{
+    fun deleteUser(@PathVariable id: String): ResponseEntity<Map<String,String>>{
         return try{ 
             val deleted = userService.deleteUser(id)
             if (!deleted) {
@@ -91,15 +94,15 @@ class UserController(private val userService: UserService) {
         }
     }
     @GetMapping("/find/{id}",produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun findUserById(@PathVariable id:Long): ResponseEntity<Any>{
+    fun findUserById(@PathVariable id: String): ResponseEntity<Any>{
         return try{
-          val exist = userService.findUserById(id);
-          if (exist == null) {
+          val user = userService.findUserById(id)
+          if (user == null) {
               ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                   mapOf("message" to "User with id $id not found")
               )
           } else {
-              ResponseEntity.ok(mapOf("name" to exist.name , "email" to exist.email))
+              ResponseEntity.ok(user.toResponseDTO())
           }
         }catch(e:Exception){
           // Log the exception for debugging

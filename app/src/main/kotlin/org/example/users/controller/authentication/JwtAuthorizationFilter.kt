@@ -53,6 +53,7 @@ class JwtAuthorizationFilter(
     }
     private fun getAuthentication(token:String): UsernamePasswordAuthenticationToken?{
         if(!jwtTokenUtil.isTokenValid(token)) return null
+        if(!jwtTokenUtil.isAccessToken(token)) return null
         val email = jwtTokenUtil.getEmail(token)
         val user = service.loadUserByUsername(email)
         return UsernamePasswordAuthenticationToken(user,null,user.authorities)

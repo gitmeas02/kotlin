@@ -15,11 +15,12 @@ class CustomUserDetailsService (
     override fun loadUserByUsername(username: String): UserDetails{
         // Create a method in your repo to find a user by its username
       val user = repository.findByEmail(username) ?: throw UsernameNotFoundException("$username not found")
+        val roleName = user.roles.firstOrNull()?.name ?: "user"
         return UserSecurity(
-            user.id,
+            user.uuid,
             user.email,
             user.password,
-            Collections.singleton(SimpleGrantedAuthority("user"))
+            Collections.singleton(SimpleGrantedAuthority(roleName))
         )
     }
 }

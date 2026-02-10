@@ -12,12 +12,29 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
     private val userDetailsService: CustomUserDetailsService
 ){
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration()
+        configuration.allowedOrigins = listOf("http://localhost:3000")
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+        configuration.allowedHeaders = listOf("*")
+        configuration.allowCredentials = true
+        configuration.maxAge = 3600L
+        
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", configuration)
+        return source
+    }
+
     @Bean
     fun jwtTokenUtil(): JwtTokenUtil {
         return JwtTokenUtil()
@@ -39,7 +56,7 @@ class SecurityConfig(
                 authz.requestMatchers("/api/auth/**", "/health").permitAll()
                 authz.anyRequest().authenticated()
             }
-            .cors { } // Enable CORS with default configuration
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .authenticationManager(authenticationManager)
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

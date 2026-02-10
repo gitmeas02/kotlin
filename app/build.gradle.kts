@@ -20,6 +20,9 @@ dependencies {
     // Web
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+// Validation
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
 // Security
     implementation("org.springframework.boot:spring-boot-starter-security")
 

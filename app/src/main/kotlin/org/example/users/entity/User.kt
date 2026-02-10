@@ -2,6 +2,7 @@ package org.example.users.entity
 
 import jakarta.persistence.*
 import java.time.Instant
+import java.util.UUID
 
 @Entity
 @Table(name = "users")
@@ -9,8 +10,8 @@ import java.time.Instant
 open class User(
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open var id: Long = 0,
+    @Column(nullable = false, unique = true, length = 36)
+    open var uuid: String = UUID.randomUUID().toString(),
     
     @Column(nullable = false, length = 100)
     open var name: String = "",
@@ -20,6 +21,20 @@ open class User(
 
     @Column(nullable = false)
     open var password: String = "",
+
+    @Column(nullable = true)
+    open var avatar: String? = null,
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = [JoinColumn(name = "user_uuid")],
+        inverseJoinColumns = [JoinColumn(name = "role_name")]
+    )
+    open var roles: MutableSet<Role> = mutableSetOf(),
+
+    @Column(name = "token_version", nullable = false)
+    open var tokenVersion: Int = 1,
 
     @Column(name = "created_at", nullable = false)
     open var createdAt: Instant = Instant.now(),
